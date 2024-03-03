@@ -20,13 +20,8 @@ const Login = ({ setIsAuthenticated }) => {
 	const [isClicked, setIsClicked] = useState(false);
 	const [isPasswordVisible, setPasswordVisibility] = useState(false);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	// const [userId, setUserId] = useState('');
 	
-	// ==============================================
-	//Delete these once done.
-	// setIsAuthenticated(true); 	
-	// setIsLoggedIn(true);		
-	// history.push('/home');	
-	// ==============================================
 	// Functions
 	const useStyles = makeStyles((theme) => ({
 		margin: {
@@ -49,6 +44,8 @@ const Login = ({ setIsAuthenticated }) => {
 		e.preventDefault();
 		const userCredential = await signInWithEmailAndPassword(auth, email, password);
 		const user = userCredential.user;
+
+		// setUserId(user.email);
 		if (user || isLoggedIn) {
 			setIsAuthenticated(true);
 			setIsLoggedIn(true);

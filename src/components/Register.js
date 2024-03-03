@@ -1,18 +1,18 @@
+import React, { useState } from 'react';
 import { TextField, IconButton, InputAdornment } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { useState } from 'react';
-import { useHistory } from 'react-router';
-import { getAuth, createUserWithEmailAndPassword} from 'firebase/auth';
-import { auth } from "../firebase";
+import { makeStyles } from '@material-ui/core/styles';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
+import CryptoJS from 'crypto-js';
+import { useHistory } from 'react-router';
 
 const Register = () => {
-	const history = useHistory();
 	const auth = getAuth();
-
-	// State Variables
+	
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [conformPassword, setConformPassword] = useState('');
@@ -20,7 +20,7 @@ const Register = () => {
 	const [isClicked, setIsClicked] = useState(false);
 	const [isPasswordVisible, setPasswordVisibility] = useState(false);
 	const [isConformPasswordVisible, setConformPasswordVisibility] = useState(false);
-	// Functions
+	const history = useHistory();
 	const useStyles = makeStyles((theme) => ({
 		margin: {
 			margin: theme.spacing(1),
@@ -47,13 +47,31 @@ const Register = () => {
 
 	const classes = useStyles();
 
+	const generateSymmetricKey = () => {
+		return CryptoJS.lib.WordArray.random(32).toString(CryptoJS.enc.Hex); // 256 bits
+	};
+	const storeKeyInFirebase = async(userId, skey) => {
+		const userDocRef = doc(db, "users", userId);
+		
+		await setDoc(userDocRef, {key:skey})
+		.then(() => {
+			console.log("Document has been added successfully");
+		})
+		.catch(error => {
+			console.log(error);
+		})
+	};
+
 	const postRegister = async () => {
 		try {
 			const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+			history.push('/home');
 			const user = userCredential.user;
 			if (user) {
+				const symmetricKey = generateSymmetricKey();
+				console.log("Symmetric Key: " + symmetricKey);
+				storeKeyInFirebase(email, symmetricKey);
 				setIsValidated(true);
-				history.push('/login');
 				console.log("User Registered!")
 			} else {
 				setIsValidated(false);
@@ -71,10 +89,11 @@ const Register = () => {
 		const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zAZ]{2,}))$/;
 		// password regex
 		const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-		
+
 		if ((password === conformPassword) && emailRegex.test(email) && passwordRegex.test(password) && passwordRegex.test(conformPassword)) {
 			setIsValidated(true);
 			postRegister(e);
+			
 		} else {
 			setIsValidated(false);
 		}
@@ -92,42 +111,23 @@ const Register = () => {
 					/>
 					<h3 className="form-title">Register</h3>
 				</div>
-				{/* <TextField
-					id="outlined-full-width"
-					label="Name"
-					style={{ margin: 8 }}
-					{...(!isValidated && isClicked ? { error: true } : {})}
-					placeholder="Name"
-					fullWidth
-					margin="normal"
-					InputLabelProps={{
-						shrink: true,
-					}}
-					autoComplete="off"
-					variant="outlined"
-					onChange={(e) => {
-						setName(e.target.value);
-					}}
-				/> */}
+
 				<TextField
-					id="outlined-full-width"
+					id="email"
 					label="Email"
 					style={{ margin: 8 }}
 					{...(!isValidated && isClicked ? { error: true } : {})}
 					placeholder="Email"
 					fullWidth
 					margin="normal"
-					InputLabelProps={{
-						shrink: true,
-					}}
+					InputLabelProps={{ shrink: true, }}
 					autoComplete="off"
 					variant="outlined"
-					onChange={(e) => {
-						setEmail(e.target.value);
-					}}
+					onChange={(e) => { setEmail(e.target.value); }}
 				/>
+
 				<TextField
-					id="outlined-full-width"
+					id="password"
 					type={isPasswordVisible ? 'text' : 'password'} // Toggle password visibility
 					label="Password"
 					style={{ margin: 8 }}
@@ -135,14 +135,10 @@ const Register = () => {
 					placeholder="Password"
 					fullWidth
 					margin="normal"
-					InputLabelProps={{
-						shrink: true,
-					}}
+					InputLabelProps={{ shrink: true, }}
 					autoComplete="off"
 					variant="outlined"
-					onChange={(e) => {
-						setPassword(e.target.value);
-					}}
+					onChange={(e) => { setPassword(e.target.value); }}
 					InputProps={{
 						endAdornment: (
 							<InputAdornment position="end">
@@ -160,7 +156,7 @@ const Register = () => {
 					}}
 				/>
 				<TextField
-					id="outlined-full-width"
+					id="confpassword"
 					type={isConformPasswordVisible ? 'text' : 'password'}
 					label="Password"
 					style={{ margin: 8 }}
@@ -168,14 +164,10 @@ const Register = () => {
 					placeholder="Conform Password"
 					fullWidth
 					margin="normal"
-					InputLabelProps={{
-						shrink: true,
-					}}
+					InputLabelProps={{ shrink: true, }}
 					autoComplete="off"
 					variant="outlined"
-					onChange={(e) => {
-						setConformPassword(e.target.value);
-					}}
+					onChange={(e) => { setConformPassword(e.target.value); }}
 					InputProps={{
 						endAdornment: (
 							<InputAdornment position="end">

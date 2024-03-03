@@ -4,15 +4,27 @@ import SideBar from './SideBar';
 import FileContainer from './FileContainer';
 import Web3 from 'web3';
 import Drive from '../artifacts/contracts/Drive.sol/Drive.json';
+import { onAuthStateChanged } from 'firebase/auth';
+import { getAuth } from "firebase/auth";
 
 const Dashboard = () => {
   // State Variables
   const [sideBarOption, setSideBarOption] = useState(0);
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Assuming the user is logged in initially
+  const [isLoggedIn, setIsLoggedIn] = useState(true);  // Assuming the user is logged in initially
   const [reRender, setReRender] = useState(0);
   const [account, setAccount] = useState(null);
   const [contract, setContract] = useState(null);
+  const [userid, setUserid] = useState('');
+  
+  useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth,(user) => {
+      if(user){
+        setUserid(user.email);
+      }
+    });
 
+  },[userid])
 
   async function loadWeb3() {
     if (window.ethereum) {
@@ -32,11 +44,11 @@ const Dashboard = () => {
     const accounts = await web3.eth.getAccounts();
     setAccount(accounts[0]);
 
-    const contractAddress = "0xE24d566D718Ac91E8f93D9a0eDE2aA183e7B6585";
+    const contractAddress = "0x314d57E13370C269727e21e796d75adf0f078fE1";
     const _contract = new web3.eth.Contract(Drive.abi, contractAddress);
     setContract(_contract);
   }
-
+  
   useEffect(() => {
     loadWeb3();
     loadBlockchainData();
@@ -48,6 +60,7 @@ const Dashboard = () => {
       {/* Header */}
       <Header
         setIsLoggedIn={setIsLoggedIn}
+        userId = {userid}
       />
       <div className="main-flex">
         {/* Side Bar */}
@@ -57,6 +70,7 @@ const Dashboard = () => {
           setReRender={setReRender}
           contract={contract}
           account={account}
+          userId = {userid}
         />
         {/* FileContainer */}
         <FileContainer
@@ -65,6 +79,7 @@ const Dashboard = () => {
           setReRender={setReRender}
           contract={contract}
           account={account}
+          userId = {userid}
         />
       </div>
     </div>

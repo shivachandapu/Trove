@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomiclabs/hardhat-ganache");
 
 module.exports = {
   solidity: "0.8.19",
@@ -9,8 +10,8 @@ module.exports = {
 
   networks:{   
     ganache: {
-      url: "HTTP://0.0.0.0:7545",
-      accounts: ['0x8c9773fc7ccb301a4a9cf0c778a85f2c6f61e6246fdb324896a6eae89e20e32a']
+      url: "http://0.0.0.0:8545",
+      accounts: ['0x6c31a35b8fe86b024b6c971eeeda3a8a296d6967e2104eca9c780e76403d75bc']
     },
 
     // hardhat: {

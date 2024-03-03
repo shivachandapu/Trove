@@ -4,7 +4,7 @@ module.exports = function (app) {
   app.use(
     '/api',  // You can specify the path you want to proxy, e.g., '/api' or '/'
     createProxyMiddleware({
-      target: 'http://127.0.0.1:5001', // Replace with your IPFS server URL
+      target: 'http://0.0.0.0:5001', // Replace with your IPFS server URL
       changeOrigin: true,
     })
   );

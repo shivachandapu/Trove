@@ -7,20 +7,9 @@ import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import { create } from 'kubo-rpc-client';
-// import Web3 from 'web3';
-
-
-const style = {
-	position: 'absolute',
-	top: '50%',
-	left: '50%',
-	transform: 'translate(-50%, -50%)',
-	width: 400,
-	borderRadius: 5,
-	bgcolor: 'background.paper',
-	boxShadow: 24,
-	p: 4,
-};
+import { db } from "../firebase";
+import { getDoc, doc, setDoc, serverTimestamp } from "firebase/firestore";
+import swal from 'sweetalert';
 
 const SideBar = ({
 	sideBarOption,
@@ -28,7 +17,8 @@ const SideBar = ({
 	reRender,
 	setReRender,
 	contract,
-	account
+	account,
+	userId
 }) => {
 	// State Variables
 	const [listActive1, setListActive1] = useState('list-item-active');
@@ -37,11 +27,12 @@ const SideBar = ({
 	const [isFileUploaded, setIsFileUploaded] = useState(false);
 	const [metaData, setMetaData] = useState({});
 	const [file, setFile] = useState();
+
 	const web3 = window.web3;
 
 	const ipfs = create({ url: 'http://10.110.21.55:5001' });
 	// Functions
-	
+
 	// Button Styles
 	const useStyles = makeStyles({
 		btn: {
@@ -63,24 +54,73 @@ const SideBar = ({
 		setSideBarOption(option);
 	};
 
-	// Function to upload user file to IPFS
-	async function uploadFileToIPFS() {
-		const { cid } = await ipfs.add(file).catch((error) => {
-			console.error("Failed to add file to IPFS:", error);
-			throw error; // or return error;
-		});
-		
-		return "" + cid;
-	};
 
-	// Function to store the metadata in the blockchain
-	async function uploadMetaData(_cid) { //Change this to firebase
+	// async function uploadFileToIPFS() {
+	// 	const { cid } = await ipfs.add(file).catch((error) => {
+	// 		console.error("Failed to add file to IPFS:", error);
+	// 		throw error; // or return error;
+	// 	});
+	// 	return "" + cid;
+	// };
+
+	async function uploadFileToIPFS() {
+		const desiredNumChunks = 12; 
+		const reader = new FileReader();
+		const fileArrayBuffer = await file.arrayBuffer();
+		const fileSize = fileArrayBuffer.byteLength;
+		const chunkSize = Math.ceil(fileSize / desiredNumChunks);
+
+		const chunks = [];
+		// const fileChunks = [];
+
+		for (let i = 0; i < desiredNumChunks; i++) {
+		const offset = i * chunkSize;
+		const chunk = fileArrayBuffer.slice(offset, offset + chunkSize);
+		const cid = await ipfs.add(chunk);
+		chunks.push(cid.path.toString());
+		// fileChunks.push(chunk);
+}
+
+
+		// return { chunks, fileChunks };
+		console.log("Chunk cid's: ", chunks);
+		// console.log("chunk file: ", fileChunks);
+		return chunks; 	// array of chunks
+	  }
+
+	async function uploadMetaData(chunks) {
 		try {
-			if (contract) {
+			if (db) {
 				const { fileName, createDate, fileSize, type } = metaData;
-				console.log("File Type: "+type);
-				const tx = await contract.methods.uploadFile(_cid, fileName, createDate, fileSize, type).send({ from: account });
-				await web3.eth.getTransactionReceipt(tx.transactionHash);
+
+				const fileRef = doc(db, "users", userId, "files", fileName);
+				const docSnap = await getDoc(fileRef);
+
+				if (docSnap.exists()) {
+					swal({
+						title: "File exists already!",
+						icon: "error",
+						button:false,
+						timer: 1000
+					  });
+				}
+				else {
+					await setDoc(fileRef, {
+						chunks: chunks,
+						// cid: _cid,
+						filename: fileName,
+						createdate: serverTimestamp(),
+						filesize: fileSize,
+						filetype: type
+					});
+					console.log("The file is added!");
+					swal({
+						title: "File Uploaded!",
+						icon: "success",
+						button:false,
+						timer: 1000
+					  });
+				}
 
 				if (reRender) {
 					setReRender(0);
@@ -91,24 +131,22 @@ const SideBar = ({
 				setMetaData({});
 				setIsFileUploaded(false);
 			} else {
-				console.error('Contract not available');
+				console.error('Database not available');
 			}
 		} catch (error) {
-			console.error('Error uploading metadata to the blockchain:', error);
+			console.error(error);
 		}
+
 	};
 
 	const handleUpload = async (e) => {
-		// e.preventDefault();
+		handleClose();
 		try {
-			const _cid = await uploadFileToIPFS();
-			await uploadMetaData(_cid);
-			handleClose();
-			console.log("The file has been uploaded successfully!");
+			const chunks = await uploadFileToIPFS(); //  return array of CID's
+			await uploadMetaData(chunks);	
 		} catch (error) {
 			console.error("Error during file upload:", error);
 			console.log("Couldn't upload the file!");
-			// Handle any necessary error recovery or UI feedback here
 		}
 		e.target.files = {};
 	};
@@ -124,10 +162,8 @@ const SideBar = ({
 			<Modal
 				open={open}
 				onClose={handleClose}
-				aria-labelledby="modal-modal-title"
-				aria-describedby="modal-modal-description"
 			>
-				<Box className="upload-modal" sx={style}>
+				<Box className="upload-modal">
 					{isFileUploaded ? (
 						<div className="metaData">
 							<p>File name : {metaData.fileName}</p>
@@ -136,8 +172,7 @@ const SideBar = ({
 							{ }
 						</div>
 					) : (
-						<div className="metaData not-uploaded">
-							<p>No files yet</p>
+						<div >
 						</div>
 					)}
 

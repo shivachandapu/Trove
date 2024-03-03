@@ -2,65 +2,66 @@ import React, { useState, useEffect } from 'react';
 import File from './File';
 import DevCard from './DevCard';
 import { DevTeam } from './DevTeam';
+import { db } from "../firebase";
+import { collection, getDocs } from "firebase/firestore";
 
-
-const FileContainer = ({ sideBarOption, reRender, setReRender, contract, account }) => {
+const FileContainer = ({ sideBarOption, reRender, setReRender, contract, account, userId }) => {
   const [files, setFiles] = useState([]);
-  const [numberOfFiles, setNumberOfFiles] = useState(0);
-  // UseEffect
-  useEffect(() => {
-    getFiles();
-  }, [contract,reRender]);
-
-
-  // Functions
-  async function getFiles() {
-    try {
-      if (contract) {
-        console.log("Contract loaded successfully!");
-        const NoF = await contract.methods.getNumberOfFiles().call({ from: account });
-        setNumberOfFiles(NoF);
-        const fetchedFiles = [];
-        for (let i = 0; i < NoF; i++) {
-          const { cid, metadata } = await contract.methods.getFile(i).call({ from: account });
-          fetchedFiles.push({ index: i, cid, metadata });
-        }
-        setFiles(fetchedFiles)
-        return fetchedFiles;
-      }
-      else {
-        console.log("Contract not loaded!");
-      }
-    } catch (error) {
-      console.error("Error fetching files:", error);
-      throw error;
-    }
+  
+  async function getAllFiles() {
+    if (!userId)
+      return;
+    const fileList = collection(db, "users", userId, "files");
+    getDocs(fileList)
+      .then((fileSnapshot) => {
+        setFiles(fileSnapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() })
+        ));
+      })
+      .catch((err) => {
+        console.error("Could not find the files!", err);
+      });
   }
+
+  useEffect(() => {
+    getAllFiles();
+  }, [userId, reRender]);
+
+  useEffect(() => {
+  }, [files]);
+
 
   // Render main according to side bar option
   if (sideBarOption === 0) {
+
     return (
       <div className="main">
-        <div className="file-grid">
-
-          {files ? (
-            files.map((file, index) => (
+        {files.length ? (
+          <div className="file-grid">
+            {files.map((file) => (
               <File
-                key={file.index}
-                cid={file.cid}
-                metaData={file.metadata}
+                userId={userId}
+                key={file.id}
+                id={file.id}
+                chunks={file.chunks}
+                filename={file.filename}
+                createdate={file.createdate}
+                filesize={file.filesize}
+                filetype={file.filetype}
+                reRender={reRender}
+                setReRender={setReRender}
               />
-            ))
-          ) : (
-            <div>
-              <p>
-                Haven't uploaded any files!
-              </p>
-            </div>
-          )
-          }
+            ))}
+          </div>
+        ) : (
+          <div className="no-files-uploaded-message">
+            <p>
+              Haven't uploaded any files!
+            </p>
+          </div>
+        )
+        }
 
-        </div>
       </div>
     );
   } else {
