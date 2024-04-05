@@ -1,0 +1,73 @@
+{
+  "name": "trove",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.8",
+    "@material-ui/core": "^4.12.3",
+    "@material-ui/icons": "^4.11.2",
+    "@mui/icons-material": "^5.14.14",
+    "@mui/material": "^5.14.14",
+    "@mui/styled-engine-sc": "^6.0.0-alpha.2",
+    "bootstrap": "^5.3.2",
+    "bufferlist": "^0.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "env-cmd": "^10.1.0",
+    "firebase": "^10.5.0",
+    "http-proxy-middleware": "^2.0.6",
+    "ipfs-http-client": "^60.0.1",
+    "kubo-rpc-client": "^3.0.1",
+    "mime-types": "^2.1.35",
+    "mui": "^0.0.1",
+    "pdfjs": "^2.5.3",
+    "react": "^17.0.2",
+    "react-bootstrap": "^2.10.1",
+    "react-dom": "^17.0.2",
+    "react-firebase-hooks": "^5.1.1",
+    "react-router-dom": "^5.3.4",
+    "react-scripts": "5.0.1",
+    "rn-nodeify": "^10.3.0",
+    "styled-components": "^6.1.0",
+    "web3": "^1.10.2",
+    "webpack": "^5.89.0"
+  },
+  "scripts": {
+    "start": "env-cmd -f .env react-scripts start",
+    "build:staging": "env-cmd -f .env.staging react-scripts build",
+    "build:production": "env-cmd -f .env.production react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomiclabs/hardhat-ganache": "^2.0.1",
+    "dotenv-webpack": "^8.0.1",
+    "hardhat": "^2.18.2"
+  },
+  "browser": {
+    "fs": false,
+    "os": false,
+    "path": false
+  }
+}
