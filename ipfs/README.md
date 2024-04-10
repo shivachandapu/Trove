@@ -5,42 +5,51 @@ This Bash script automates the installation and configuration of IPFS (InterPlan
 ## Installation Steps:
 
 ### Clone the Repository:
-
-> git clone <repository_url>
-
-> cd <repository_name>
+```bash
+git clone https://github.com/shivachandapu/Trove.git
+cd Trove
+```
 
 ### Set Up IPFS Kubo-Go:
 
-Ensure that kubo_v0.22.0_linux-amd64.tar.gz is available in the repository directory.
-Customize variables such as VOID, GATEWAY, API, and IPFS_BOOTSTRAP_ADDRESS in the Bash script according to your requirements.
-Run the Installation Script:
+Ensure that `kubo_v0.22.0_linux-amd64.tar.gz` is available in the repository directory.
+Customize variables such as `VOID`, `GATEWAY`, `API`, and `IPFS_BOOTSTRAP_ADDRESS` in the Bash script according to your requirements.
 
-> bash install_ipfs_kubo_go.sh
+Run the Installation Script:
+```bash
+bash ipfs_install.sh
+```
 
 ### Verify Installation:
 Once the installation completes, you can verify the installation by checking the IPFS version:
-
-> ipfs --version
- 
+```bash
+ipfs --version
+```
 ### Usage:
 
 Starting the IPFS Daemon:
-> systemctl start ipfsd
+```bash
+systemctl start ipfsd
+```
 
 Restarting the IPFS Daemon:
-> systemctl restart ipfsd
+```bash
+systemctl restart ipfsd
+```
 
 Stopping the IPFS Daemon:
-> systemctl stop ipfsd
-
+```bash
+systemctl stop ipfsd
+```
 Viewing Swarm Peers:
-> ipfs swarm peers
+```bash
+ipfs swarm peers
+```
 
 ## Additional Information:
 
 ### Configuration File Location:
-The IPFS daemon service file is located at _/usr/lib/systemd/system/ipfsd.service_.
+The IPFS daemon service file is located at `/usr/lib/systemd/system/ipfsd.service`.
 
 ### Customization:
 Modify the service file or script as needed to tailor the IPFS configuration to your environment.
