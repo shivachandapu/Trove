@@ -12,7 +12,8 @@ cd Trove
 
 ### Set Up IPFS Kubo-Go:
 
-Ensure that `kubo_v0.22.0_linux-amd64.tar.gz` is available in the repository directory.
+Click on this [link](https://dist.ipfs.tech/kubo/v0.22.0/kubo_v0.22.0_linux-amd64.tar.gz) to download `kubo_v0.22.0`. 
+Ensure that `kubo_v0.22.0_linux-amd64.tar.gz` is moved to the working directory.
 Customize variables such as `VOID`, `GATEWAY`, `API`, and `IPFS_BOOTSTRAP_ADDRESS` in the Bash script according to your requirements.
 
 Run the Installation Script:
